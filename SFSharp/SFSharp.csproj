@@ -7,6 +7,12 @@
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<IsAotCompatible>True</IsAotCompatible>
 	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+
+	<Version>0.1.0</Version>
+
+	<PackageLicenseExpression>Unlicense</PackageLicenseExpression>
+
+	<RepositoryUrl>https://github.com/TheLeftExit/SFSharp</RepositoryUrl>
   </PropertyGroup>
 
 </Project>
