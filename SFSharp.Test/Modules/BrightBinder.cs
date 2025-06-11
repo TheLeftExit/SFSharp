@@ -31,11 +31,26 @@ public class BrightBinder : ISFSharpModule
     {
         var currentDialog = BBDialog.FromFile(fileName);
 
+        if(targetIdOrNull is not null && SF.GetPlayerScore(targetIdOrNull.Value) == 0)
+        {
+            new SFDialog
+            {
+                Style = DialogStyle.MsgBox,
+                Title = "BrightBinder",
+                Items = ["Loading player score..."],
+            }.Show();
+            SF.UpdateScoreAndPing();
+            while(SF.GetPlayerScore(targetIdOrNull.Value) == 0)
+            {
+                await Task.Yield();
+            }
+        }
+
         var result = await new SFDialog
         {
             Style = DialogStyle.TabListHeaders,
             Title = $"BrightBinder: {fileName}.txt",
-            Header = targetIdOrNull is int targetId ? $"Target: {SF.GetPlayerName(targetId)}[{targetId}] <{await SF.GetPlayerScoreAsync(targetId)}>" : "No target selected.",
+            Header = targetIdOrNull is int targetId ? $"Target: {SF.GetPlayerName(targetId)}[{targetId}] <{SF.GetPlayerScore(targetId)}>" : "No target selected.",
             Items = currentDialog.Items.Select(entry => entry.GetDisplayText()).ToArray(),
             AcceptButton = "Select",
             CancelButton = "Cancel"

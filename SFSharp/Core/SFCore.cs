@@ -5,8 +5,9 @@ namespace SFSharp;
 
 public unsafe static partial class SFCore
 {
-    public static int Init(CSharpExports* exports, Action mainMethod)
+    public static int Init(nint exportsPtr, Action mainMethod)
     {
+        var exports = (CSharpExports*)exportsPtr;
         _exports = *exports;
         if(_exports.Version != sizeof(CSharpExports))
         {
@@ -17,7 +18,7 @@ public unsafe static partial class SFCore
         exports->MainLoop = &MainLoop;
 
         RegisterDialogCallback(&SFDialog.DialogCallback);
-        SF.StartLoop();
+        SF.StartChatLoop();
 
         try { mainMethod(); } catch(Exception ex) { LogException(ex); }
         return 0;

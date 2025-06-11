@@ -10,23 +10,8 @@ public static partial class SF
     public static string? GetPlayerName(int playerId) => SFCore.GetPlayerName(playerId);
     public static int GetLocalPlayerId() => SFCore.GetLocalPlayerId();
     public static int? GetAimedPlayerId() => SFCore.GetAimedPlayerId();
-    public static async Task<int?> GetPlayerScoreAsync(int playerId)
-    {
-        if (!IsPlayerDefined(playerId)) return null;
-
-        bool isScoreLoaded() => SFCore.GetPlayerPing(playerId) is int ping && ping >= 0;
-
-        if (!isScoreLoaded())
-        {
-            SFCore.UpdateScoreAndPing();
-            while (!isScoreLoaded())
-            {
-                await Task.Yield();
-            }
-        }
-        return SFCore.GetPlayerScore(playerId);
-    }
-
+    public static int? GetPlayerScore(int playerId) => SFCore.GetPlayerScore(playerId);
+    public static void UpdateScoreAndPing() => SFCore.UpdateScoreAndPing();
     public static bool IsKeyDown(VK key) => SFCore.IsKeyDown(key);
     public static bool IsKeyPressed(VK key) => SFCore.IsKeyPressed(key);
     public static async Task<string> TakeScreenshotAsync()
@@ -52,6 +37,7 @@ public static partial class SF
                 }
                 catch
                 {
+                    SF.AddChatMessage("catch");
                     await Task.Yield();
                     continue;
                 }

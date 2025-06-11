@@ -6,7 +6,6 @@
     <Nullable>enable</Nullable>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	<IsAotCompatible>True</IsAotCompatible>
-	<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
 
 	<Version>0.1.0</Version>
 

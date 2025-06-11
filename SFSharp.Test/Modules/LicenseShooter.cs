@@ -1,4 +1,5 @@
 ﻿using SFSharp;
+using System.Diagnostics;
 using System.Reflection.PortableExecutable;
 
 public class LicenseShooter : ISFSharpModule
@@ -10,6 +11,20 @@ public class LicenseShooter : ISFSharpModule
         SF.AddChatMessage("[SFSharp] Starting earnings: " + earnings);
 
         var lastEarnings = 0;
+        var lastScreenshot = (string?)null;
+
+        SF.RegisterChatCommand("oops", x =>
+        {
+            if(lastScreenshot is null)
+            {
+                SF.AddChatMessage("[SFSharp] Nothing to undo.");
+                return;
+            }
+            earnings -= lastEarnings;
+            File.Delete(lastScreenshot);
+            lastScreenshot = null;
+            SF.AddChatMessage($"[SFSharp] Screenshot deleted; earnings reverted to: {earnings}");
+        });
 
         await foreach(var entry in SF.StreamChatEntries(token))
         {
@@ -28,7 +43,6 @@ public class LicenseShooter : ISFSharpModule
 
             if (!text.EndsWith("купил лицензию")) continue;
 
-            
             var buyer = text.Substring(0, text.IndexOf(' '));
             /*
             if (buyer == SF.GetPlayerName(SF.GetLocalPlayerId()))
@@ -37,6 +51,7 @@ public class LicenseShooter : ISFSharpModule
                 continue;
             }
             */
+
             var dialogResult = await new SFDialog
             {
                 Style = DialogStyle.MsgBox,
@@ -52,19 +67,20 @@ public class LicenseShooter : ISFSharpModule
             File.WriteAllText(path, earnings.ToString());
             await Task.Delay(500);
 
-            SF.AddChatMessage("/time");
+            SF.SendChatMessage("/time");
             await Task.Delay(500);
 
-            var lastScreenshot = await SF.TakeScreenshotAsync();
+            lastScreenshot = await SF.TakeScreenshotAsync();
 
             var folder = Path.GetDirectoryName(lastScreenshot)!;
-            var fileName = Path.GetFileName(lastScreenshot)!;
             int screenshotNumber = 0;
             while (File.Exists(Path.Combine(folder, $"LicenseSale_{screenshotNumber:D3}.png")))
             {
                 screenshotNumber++;
             }
-            File.Move(Path.Combine(folder, fileName), Path.Combine(folder, $"LicenseSale_{screenshotNumber:D3}.png"));
+            var newName = Path.Combine(folder, $"LicenseSale_{screenshotNumber:D3}.png");
+            File.Move(lastScreenshot, newName);
+            lastScreenshot = newName;
         }
     }
 }

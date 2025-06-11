@@ -132,4 +132,11 @@ internal unsafe struct ChatEntry
     public int _type;
     public uint _textColor;
     public uint _prefixColor;
+
+    public bool Equals(ref ChatEntry other)
+    {
+        var thisSpan = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref this, 1));
+        var otherSpan = MemoryMarshal.AsBytes(MemoryMarshal.CreateReadOnlySpan(ref other, 1));
+        return thisSpan.SequenceEqual(otherSpan);
+    }
 }

@@ -3,9 +3,8 @@
 		<TargetFramework>net9.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<PublishAot>true</PublishAot>
-		<UseNugetPackage>true</UseNugetPackage>
+		<UseNugetPackage>false</UseNugetPackage>
 	</PropertyGroup>
 
 	<ItemGroup Condition="$(UseNugetPackage) != 'true'">

@@ -6,7 +6,6 @@ public record SFChatEntry(string? Text, uint TextColor, uint Timestamp);
 
 public static partial class SF
 {
-    private static uint _lastTimestamp = 0;
     private static readonly Stack<SFChatEntry> _entryStack = new();
     private static readonly List<Queue<SFChatEntry>> _queues = new();
 
@@ -15,13 +14,14 @@ public static partial class SF
         return new SFChatEntry(AnsiString.Decode(entry._text), entry._textColor, entry._systemTime);
     }
 
-    internal static async void StartLoop()
+    internal static async void StartChatLoop()
     {
+        var chat = new ChatEntry[100];
+        var lastEntry = default(ChatEntry);
         while (true)
         {
-            var chat = SFCore.GetChat();
-            var newLastTimestamp = chat[99]._systemTime;
-            for (int i = 99; i > 0 && chat[i]._systemTime != _lastTimestamp; i--)
+            SFCore.GetChat().CopyTo(chat);
+            for (int i = 99; i > 0 && !chat[i].Equals(lastEntry); i--)
             {
                 var entry = DecodeEntry(chat[i]);
                 _entryStack.Push(entry);
@@ -30,12 +30,13 @@ public static partial class SF
             while (_entryStack.Count > 0)
             {
                 var entry = _entryStack.Pop();
+                SFDebug.Log(entry.Text ?? "<empty>");
                 foreach (var queue in _queues)
                 {
                     queue.Enqueue(entry);
                 }
             }
-            _lastTimestamp = newLastTimestamp;
+            lastEntry = chat[99];
             await Task.Yield();
         }
     }
