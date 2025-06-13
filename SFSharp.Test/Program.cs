@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using SFSharp;
@@ -10,11 +11,14 @@ public static class Program
 
     public static async void Main()
     {
+        //await Task.Delay(10000);
+        Hooker.InstallEmptyTrampoline();
+        
         var container = new SFSharpModuleContainer();
-        //container.RegisterModule<BrightBinder>();
+        container.RegisterModule<BrightBinder>();
         container.RegisterModule<LicenseShooter>();
-        //container.RegisterModule<NodShaker>();
-        //container.RegisterModule<CountryCapitalHelper>(false);
+        container.RegisterModule<NodShaker>();
+        container.RegisterModule<CountryCapitalHelper>(false);
 
         SF.RegisterChatCommand("sfd", x => SFDebug.ShowDialog());
 

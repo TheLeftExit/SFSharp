@@ -37,7 +37,7 @@ public static partial class SF
                 }
                 catch
                 {
-                    SF.AddChatMessage("catch");
+                    //SF.AddChatMessage("catch");
                     await Task.Yield();
                     continue;
                 }
