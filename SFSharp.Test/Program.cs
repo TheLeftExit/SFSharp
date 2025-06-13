@@ -12,7 +12,7 @@ public static class Program
     public static async void Main()
     {
         //await Task.Delay(10000);
-        Hooker.InstallEmptyTrampoline();
+        Hooker.InstallSimpleHook();
         
         var container = new SFSharpModuleContainer();
         container.RegisterModule<BrightBinder>();

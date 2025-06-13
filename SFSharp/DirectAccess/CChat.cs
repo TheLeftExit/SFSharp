@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Drawing;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading.Tasks;
@@ -9,25 +10,37 @@ public unsafe delegate void CChatAddEntry(void* thisPtr, int nType, byte* szText
 
 public static unsafe class Hooker
 {
-    public static void InstallEmptyTrampoline()
+    private static delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void> originalFunction;
+    public static void InstallSimpleHook()
     {
+        var newFunctionPointer = (nint)(delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)&MyAddEntry;
+
         const int overwriteSize = 5;
-        var functionPtr = (uint)Win32.GetSampAddress(0x67BE0);
-        Win32.VirtualProtect(functionPtr, overwriteSize, PAGE.EXECUTE_READWRITE, out var oldProtect);
+        var originalFunctionPtr = (uint)Win32.GetSampAddress(0x67BE0);
+        Win32.VirtualProtect(originalFunctionPtr, overwriteSize, PAGE.EXECUTE_READWRITE, out var oldProtect);
 
         // Initializing the trampoline with the first 5 bytes of the original function
         var trampolinePtr = Win32.VirtualAlloc(0, 10, MEM.COMMIT | MEM.RESERVE, PAGE.EXECUTE_READWRITE);
-        for(int i = 0; i < 5; i++) *(byte*)(trampolinePtr + i) = *(byte*)(functionPtr + i);
+        for(int i = 0; i < 5; i++) *(byte*)(trampolinePtr + i) = *(byte*)(originalFunctionPtr + i);
 
-        // Overwriting the first 5 bytes of the original function with a jump to the trampoline
-        *(byte*)(functionPtr) = 0xE9; // JMP instruction
-        *(uint*)(functionPtr + 1) = trampolinePtr - (functionPtr + 5);
-
-        // Initializing the second halfof the trampoline to jump back to the original function
+        // Initializing the second half of the trampoline to jump back to the original function
         *(byte*)(trampolinePtr + 5) = 0xE9;
-        *(uint*)(trampolinePtr + 6) = (functionPtr + 5) - (trampolinePtr + 10);
+        *(uint*)(trampolinePtr + 6) = (originalFunctionPtr + 5) - (trampolinePtr + 10);
 
-        Win32.FlushInstructionCache(Process.GetCurrentProcess().Handle, functionPtr, overwriteSize); // Flush the instruction cache to ensure the changes take effect
+        // Overwriting the first 5 bytes of the original function with a jump to the new function
+        *(byte*)(originalFunctionPtr) = 0xE9; // JMP instruction
+        *(uint*)(originalFunctionPtr + 1) = (uint)newFunctionPointer - (originalFunctionPtr + 5);
+
+        originalFunction = (delegate* unmanaged[Thiscall]<void*, int, byte*, byte*, uint, uint, void>)trampolinePtr;
+
+        //Win32.FlushInstructionCache(Process.GetCurrentProcess().Handle, functionPtr, overwriteSize); // Flush the instruction cache to ensure the changes take effect
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvThiscall)])]
+    private static void MyAddEntry(void* thisPtr, int nType, byte* szText, byte* szPrefix, uint textColor, uint prefixColor)
+    {
+        var newColor = (uint)Color.FromArgb(Random.Shared.Next(256), Random.Shared.Next(256), Random.Shared.Next(256)).ToArgb();
+        originalFunction(thisPtr, nType, szText, szPrefix, newColor, prefixColor);
     }
 }
 
